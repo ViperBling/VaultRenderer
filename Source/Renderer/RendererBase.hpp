@@ -37,6 +37,13 @@ namespace Renderer
         virtual void Cleanup();
 
         const vk::Instance& GetInstance() const { return mInstance; }
+        const vk::PhysicalDevice& GetPhysicalDevice() const { return mPhysicalDevice; }
+        const vk::Device& GetDevice() const { return mDevice; }
+        const vk::Queue& GetDeviceQueue() const { return mDeviceQueue; }
+        const vk::CommandPool& GetCommandPool() const { return mCommandPool; }
+        const vk::SwapchainKHR& GetSwapchain() const { return mSwapchain; }
+        const vk::SurfaceKHR& GetSurface() const { return mSurface; }
+        
 
     private:
         vk::Instance mInstance;

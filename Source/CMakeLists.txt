@@ -4,6 +4,7 @@ find_package(Vulkan REQUIRED)
 find_package(spirv_cross_core CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 # find_package(cityhash CONFIG REQUIRED)
 
 set(GLSLANG_LIB glslang::OSDependent glslang::glslang glslang::MachineIndependent glslang::GenericCodeGen glslang::glslang-default-resource-limits glslang::OGLCompiler glslang::SPVRemapper glslang::SPIRV glslang::HLSL)
@@ -20,8 +21,10 @@ file(GLOB_RECURSE Scene_Head        ${SourcePath}/Scene/*.hpp)
 file(GLOB_RECURSE Scene_Src         ${SourcePath}/Scene/*.cpp)
 file(GLOB_RECURSE Window_Head       ${SourcePath}/Windows/*.hpp)
 file(GLOB_RECURSE Window_Src        ${SourcePath}/Windows/*.cpp)
-file(GLOB_RECURSE Utilities_Head       ${SourcePath}/Utilities/*.hpp)
-file(GLOB_RECURSE Utilities_Src        ${SourcePath}/Utilities/*.cpp)
+file(GLOB_RECURSE UI_Head           ${SourcePath}/UI/*.hpp)
+file(GLOB_RECURSE UI_Src            ${SourcePath}/UI/*.cpp)
+file(GLOB_RECURSE Utilities_Head    ${SourcePath}/Utilities/*.hpp)
+file(GLOB_RECURSE Utilities_Src     ${SourcePath}/Utilities/*.cpp)
 
 add_library(FrameworkLib STATIC 
     ${Core_Head}        ${Core_Src}
@@ -29,6 +32,7 @@ add_library(FrameworkLib STATIC
     ${RHI_Head}         ${RHI_Src}
     ${Scene_Head}       ${Scene_Src}
     ${Window_Head}      ${Window_Src}
+    ${UI_Head}          ${UI_Src}
     ${Utilities_Head}   ${Utilities_Src}
 )
 
@@ -40,6 +44,7 @@ target_link_libraries(FrameworkLib PUBLIC
     Vulkan::Vulkan
     spirv-cross-core
     ${GLSLANG_LIB}
+    imgui::imgui
     # fmt::fmt-header-only
     # Microsoft::DirectXShaderCompiler
     # cityhash
