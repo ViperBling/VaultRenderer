@@ -43,7 +43,7 @@ namespace Renderer
         const vk::CommandPool& GetCommandPool() const { return mCommandPool; }
         const vk::SwapchainKHR& GetSwapchain() const { return mSwapchain; }
         const vk::SurfaceKHR& GetSurface() const { return mSurface; }
-        
+        const VmaAllocator& GetAllocator() const { return mAllocator; }
 
     private:
         vk::Instance mInstance;
@@ -77,3 +77,5 @@ namespace Renderer
         Windows::GLFWindow* mWindow = nullptr;
     };
 }
+
+Renderer::RendererBase& GetCurrentRenderer();

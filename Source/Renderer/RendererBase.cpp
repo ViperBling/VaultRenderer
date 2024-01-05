@@ -1,4 +1,5 @@
 #include "RendererBase.hpp"
+#include "Core/VaultEngine.hpp"
 #include "Windows/GLFWindow.hpp"
 
 #include <algorithm>
@@ -7,9 +8,6 @@
 #include <iostream>
 
 #include <glslang/Public/ShaderLang.h>
-
-#define VMA_IMPLEMENTATION
-#include <vma/vk_mem_alloc.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -245,4 +243,11 @@ namespace Renderer
     void RendererBase::Cleanup()
     {
     }
+}
+
+Renderer::RendererBase& GetCurrentRenderer()
+{
+    auto renderer = Core::VaultEngine::GetInstance()->GetRenderer();
+    assert(renderer);
+    return *renderer;
 }

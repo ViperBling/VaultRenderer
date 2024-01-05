@@ -1,6 +1,5 @@
 #include "ImGuiContext.hpp"
 
-#include "Core/VaultEngine.hpp"
 #include "Renderer/RendererBase.hpp"
 #include "Windows/GLFWindow.hpp"
 
@@ -11,7 +10,7 @@ namespace UI
 {
     void ImGuiContextVK::Init(const Windows::GLFWindow &window, const vk::RenderPass &renderPass)
     {
-        auto& renderer = *Core::VaultEngine::GetInstance()->GetRenderer();
+        auto& renderer = GetCurrentRenderer();
 
         ImGui::CreateContext();
         ImGui_ImplGlfw_InitForVulkan(window.GetNativeHandle(), true);
