@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utilities/Utilities.hpp"
+#include "RHI/RHIForward.hpp"
 
 #include <iostream>
 #include <memory>
@@ -27,7 +28,10 @@ namespace Renderer
     {
     public:
         NOCOPY(RendererBase)
-        RendererBase(Windows::GLFWindow* window) : mWindow(window) { }
+        RendererBase(Windows::GLFWindow* window) 
+            : mWindow(window)
+            , mCommandBuffer(nullptr)
+        { }
 
         virtual void InitContext(const RendererCreateInfo& createInfo);
         virtual void RecreateSwapchain(uint32_t surfaceWidth, uint32_t surfaceHeight);
@@ -35,6 +39,13 @@ namespace Renderer
         virtual void RenderFrame();
         virtual void EndFrame();
         virtual void Cleanup();
+        bool IsFrameRunning() const;
+        const RHI::Vulkan::ImageVK& AcquireCurrentSwapchainImage(RHI::ImageUsage::Bits usage);
+        RHI::Vulkan::CommandBufferVK& GetCurrentCommandBuffer();
+        RHI::Vulkan::StageBufferVK& GetCurrentStageBuffer();
+        size_t GetVirtualFrameCount() const { return mVirtualFrames.GetFrameCount(); }
+        void SubmitCommandsImmediate(const RHI::Vulkan::CommandBufferVK& commands);
+        RHI::Vulkan::CommandBufferVK& GetImmediateCommandBuffer();
 
         const vk::Instance& GetInstance() const { return mInstance; }
         const vk::PhysicalDevice& GetPhysicalDevice() const { return mPhysicalDevice; }
@@ -43,7 +54,14 @@ namespace Renderer
         const vk::CommandPool& GetCommandPool() const { return mCommandPool; }
         const vk::SwapchainKHR& GetSwapchain() const { return mSwapchain; }
         const vk::SurfaceKHR& GetSurface() const { return mSurface; }
+        const vk::Semaphore& GetImageAvailableSemaphore() const { return mImageAvailableSemaphore; }
+        const vk::Semaphore& GetRenderFinishedSemaphore() const { return mRenderFinishedSemaphore; }
+        RHI::Vulkan::DescriptorCacheVK& GetDescriptorCache() { return mDescriptorCache; }
         const VmaAllocator& GetAllocator() const { return mAllocator; }
+        bool IsRenderingEnabled() const { return mbRenderingEnabled; }
+
+        const RHI::Vulkan::ImageVK& AcquireSwapchainImage(size_t index, RHI::ImageUsage::Bits usage);
+        const RHI::ImageUsage::Bits GetSwapchainImageUsage(size_t index) const;
 
     private:
         vk::Instance mInstance;
@@ -63,6 +81,9 @@ namespace Renderer
         vk::Fence mImmediateFence;
 
         vk::CommandPool mCommandPool;
+        RHI::Vulkan::CommandBufferVK mCommandBuffer;
+        RHI::Vulkan::VirtualFrameProvider mVirtualFrames;
+        RHI::Vulkan::DescriptorCacheVK mDescriptorCache;
 
         vk::SwapchainKHR mSwapchain;
         vk::DebugUtilsMessengerEXT mDebugMessenger;

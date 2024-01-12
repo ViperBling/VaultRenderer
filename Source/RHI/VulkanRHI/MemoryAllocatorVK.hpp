@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RHI/RHICommon.hpp"
+
 #include <cstdint>
 #include <cstddef>
 
@@ -23,17 +25,6 @@ namespace Renderer
 
 namespace RHI::Vulkan
 {
-    enum class MemoryUsage
-    {
-        GPUOnly = 0,
-        CPUOnly,
-        CPUToGPU,
-        GPUToCPU,
-        CPUCopy,
-        GPULazyAllocated,
-        Count,
-    };
-
     VmaAllocator GetVulkanAllocator();
     void DeallocateImage(const vk::Image& image, VmaAllocation allocation);
     void DeallocateBuffer(const vk::Buffer& buffer, VmaAllocation allocation);

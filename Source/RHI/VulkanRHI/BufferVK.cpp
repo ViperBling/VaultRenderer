@@ -6,7 +6,7 @@
 
 namespace RHI::Vulkan
 {
-    Buffer::Buffer(Buffer &&other) noexcept
+    BufferVK::BufferVK(BufferVK &&other) noexcept
     {
         this->mBuffer = other.mBuffer;
         this->mSize = other.mSize;
@@ -19,12 +19,12 @@ namespace RHI::Vulkan
         other.mpMapped = nullptr;
     }
 
-    Buffer::Buffer(size_t size, BufferUsage::Value usage, MemoryUsage memoryUsage)
+    BufferVK::BufferVK(size_t size, BufferUsage::Value usage, MemoryUsage memoryUsage)
     {
         this->Init(size, usage, memoryUsage);
     }
 
-    Buffer &Buffer::operator=(Buffer &&other) noexcept
+    BufferVK &BufferVK::operator=(BufferVK &&other) noexcept
     {
         this->Destroy();
 
@@ -41,12 +41,12 @@ namespace RHI::Vulkan
         return *this;
     }
 
-    Buffer::~Buffer()
+    BufferVK::~BufferVK()
     {
         this->Destroy();
     }
 
-    void Buffer::Init(size_t size, BufferUsage::Value usage, MemoryUsage memoryUsage)
+    void BufferVK::Init(size_t size, BufferUsage::Value usage, MemoryUsage memoryUsage)
     {
         constexpr std::array bufferQueueFamilyIndices = { VK_QUEUE_FAMILY_IGNORED };
         this->Destroy();
@@ -61,12 +61,12 @@ namespace RHI::Vulkan
         this->mAllocation = AllocateBuffer(bufferCI, memoryUsage, &this->mBuffer);
     }
 
-    bool Buffer::IsMemoryMapped() const
+    bool BufferVK::IsMemoryMapped() const
     {
         return this->mpMapped != nullptr;
     }
 
-    uint8_t *Buffer::MapMemory()
+    uint8_t *BufferVK::MapMemory()
     {
         if (this->mpMapped == nullptr)
         {
@@ -75,23 +75,23 @@ namespace RHI::Vulkan
         return this->mpMapped;
     }
 
-    void Buffer::UnmapMemory()
+    void BufferVK::UnmapMemory()
     {
         RHI::Vulkan::UnmapMemory(this->mAllocation);
         this->mpMapped = nullptr;
     }
 
-    void Buffer::FlushMemory()
+    void BufferVK::FlushMemory()
     {
         this->FlushMemory(this->mSize, 0);
     }
 
-    void Buffer::FlushMemory(size_t size, size_t offset)
+    void BufferVK::FlushMemory(size_t size, size_t offset)
     {
         RHI::Vulkan::FlushMemory(this->mAllocation, size, offset);
     }
 
-    void Buffer::CopyData(const uint8_t *data, size_t size, size_t offset)
+    void BufferVK::CopyData(const uint8_t *data, size_t size, size_t offset)
     {
         assert(offset + size <= this->mSize);
         if (this->mpMapped == nullptr)
@@ -107,7 +107,7 @@ namespace RHI::Vulkan
         }
     }
 
-    void Buffer::CopyDataWithFlush(const uint8_t *data, size_t size, size_t offset)
+    void BufferVK::CopyDataWithFlush(const uint8_t *data, size_t size, size_t offset)
     {
         this->CopyData(data, size, offset);
         if (this->IsMemoryMapped())
@@ -116,7 +116,7 @@ namespace RHI::Vulkan
         }
     }
 
-    void Buffer::Destroy()
+    void BufferVK::Destroy()
     {
         if (this->mBuffer)
         {
@@ -124,5 +124,34 @@ namespace RHI::Vulkan
             DeallocateBuffer(this->mBuffer, this->mAllocation);
             this->mBuffer = vk::Buffer();
         }
+    }
+
+    StageBufferVK::StageBufferVK(size_t byteSize)
+        : mBuffer(byteSize, BufferUsage::TRANSFER_SOURCE, MemoryUsage::CPUToGPU)
+        , mCurrentOffset(0)
+    {
+        mBuffer.MapMemory();
+    }
+
+    Allocation StageBufferVK::Submit(const uint8_t *data, uint32_t byteSize)
+    {
+        assert(mCurrentOffset + byteSize < mBuffer.GetSize());
+
+        if (data != nullptr)
+        {
+            mBuffer.CopyData(data, byteSize, mCurrentOffset);
+        }
+        mCurrentOffset += byteSize;
+        return Allocation{ byteSize, mCurrentOffset - byteSize };
+    }
+
+    void StageBufferVK::Flush()
+    {
+        mBuffer.FlushMemory(mCurrentOffset, 0);
+    }
+
+    void StageBufferVK::Reset()
+    {
+        mCurrentOffset = 0;
     }
 }
